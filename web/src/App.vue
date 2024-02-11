@@ -1,18 +1,10 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
-
-import { Universe } from 'wasm-game-of-life'
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <HelloWorld msg="Game of life - RUST" />
-    </div>
-  </header>
-
   <main>
-    <div>WASM</div>
+    <HelloWorld msg="Game of life - RUST" />
   </main>
 </template>
 

@@ -2,8 +2,10 @@
   <div class="greetings">
     <h1 class="green">{{ msg }}</h1>
   </div>
-  <canvas id="game_of_life_canvas" ref="GOLContainer"></canvas>
-  <button ref="playPauseButton" @click="playOrPause()"></button>
+  <canvas id="game_of_life_canvas" ref="GOLContainer" @click="toggleCell"></canvas>
+  <div>
+    <button ref="playPauseButton" @click="playOrPause()"></button>
+  </div>
 </template>
 
 <script setup>
@@ -75,17 +77,6 @@ const drawCells = () => {
 const animationId = ref(null)
 const isPaused = computed(() => animationId.value === null)
 
-onMounted(() => {
-  GOLContainer.value.height = (CELL_SIZE + 1) * height + 1
-  GOLContainer.value.width = (CELL_SIZE + 1) * width + 1
-  ctx.value = GOLContainer.value.getContext('2d')
-  //
-  drawGrid()
-  drawCells()
-  play()
-  // requestAnimationFrame(renderLoop)
-})
-
 const renderLoop = () => {
   universe.tick()
   drawGrid()
@@ -110,6 +101,37 @@ function playOrPause() {
     pause()
   }
 }
+
+function toggleCell(event) {
+  const boundingRect = GOLContainer.value.getBoundingClientRect()
+
+  const scaleX = GOLContainer.value.width / boundingRect.width
+  const scaleY = GOLContainer.value.height / boundingRect.height
+
+  const canvasLeft = (event.clientX - boundingRect.left) * scaleX
+  const canvasTop = (event.clientY - boundingRect.top) * scaleY
+
+  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1)
+  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1)
+
+  universe.toggle_cell(row, col)
+  drawGrid()
+  drawCells()
+}
+//
+//
+//
+//
+onMounted(() => {
+  GOLContainer.value.height = (CELL_SIZE + 1) * height + 1
+  GOLContainer.value.width = (CELL_SIZE + 1) * width + 1
+  ctx.value = GOLContainer.value.getContext('2d')
+  //
+  drawGrid()
+  drawCells()
+  play()
+  // requestAnimationFrame(renderLoop)
+})
 </script>
 
 <style scoped lang="scss">
