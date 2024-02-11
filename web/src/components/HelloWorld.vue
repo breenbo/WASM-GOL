@@ -3,12 +3,13 @@
     <h1 class="green">{{ msg }}</h1>
   </div>
   <canvas id="game_of_life_canvas" ref="GOLContainer"></canvas>
+  <button ref="playPauseButton" @click="playOrPause()"></button>
 </template>
 
 <script setup>
 import { memory } from '../../../pkg/wasm_game_of_life_bg.wasm'
 import { Universe, Cell } from 'wasm-game-of-life'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 
 defineProps({
   msg: {
@@ -23,6 +24,7 @@ const DEAD_COLOR = '#FFF'
 const ALIVE_COLOR = '#000'
 
 const GOLContainer = ref(null)
+const playPauseButton = ref(null)
 const ctx = ref(null)
 const universe = Universe.new()
 const width = universe.width()
@@ -70,25 +72,44 @@ const drawCells = () => {
   ctx.value.stroke()
 }
 
+const animationId = ref(null)
+const isPaused = computed(() => animationId.value === null)
+
 onMounted(() => {
   GOLContainer.value.height = (CELL_SIZE + 1) * height + 1
   GOLContainer.value.width = (CELL_SIZE + 1) * width + 1
   ctx.value = GOLContainer.value.getContext('2d')
   //
-  const renderLoop = () => {
-    universe.tick()
-    drawGrid()
-    drawCells()
-    // GOLContainer.value.textContent = universe.render()
-    // universe.tick()
-
-    requestAnimationFrame(renderLoop)
-  }
-
   drawGrid()
   drawCells()
-  requestAnimationFrame(renderLoop)
+  play()
+  // requestAnimationFrame(renderLoop)
 })
+
+const renderLoop = () => {
+  universe.tick()
+  drawGrid()
+  drawCells()
+
+  animationId.value = requestAnimationFrame(renderLoop)
+}
+const play = () => {
+  playPauseButton.value.textContent = '⏸'
+  renderLoop()
+}
+const pause = () => {
+  playPauseButton.value.textContent = '▶'
+  cancelAnimationFrame(animationId.value)
+  animationId.value = null
+}
+
+function playOrPause() {
+  if (isPaused.value) {
+    play()
+  } else {
+    pause()
+  }
+}
 </script>
 
 <style scoped lang="scss">
